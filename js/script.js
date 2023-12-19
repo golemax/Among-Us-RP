@@ -64,6 +64,7 @@ window.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener("mousedown", async function () {
+    await canvas.requestFullscreen();
     await canvas.requestPointerLock();
 })
 
