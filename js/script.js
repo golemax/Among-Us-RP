@@ -18,7 +18,7 @@ loader.load(
     function ( xhr ) {
         console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
     },
-    function ( error ) {
+    function () {
         console.log( 'An error happened' );
     }
 );
@@ -46,8 +46,9 @@ document.body.appendChild(renderer.domElement);
 scene.background = new Three.Color(0x000000);
 
 camera.position.y = 0.1
-// TODO 12 players around the table from distance = 1.1
-let angle = 0 * Math.PI;
+
+let userNum = 0
+let angle = userNum/12 * Math.PI;
 const distance = 0.3;
 camera.position.x = Math.sin(angle) * distance;
 camera.position.z = Math.cos(angle) * distance;
@@ -62,7 +63,7 @@ window.addEventListener('mousemove', (event) => {
     }
 });
 
-canvas.addEventListener("mousedown", async function (event) {
+canvas.addEventListener("mousedown", async function () {
     await canvas.requestPointerLock();
 })
 
@@ -89,7 +90,7 @@ document.addEventListener("keydown", function (event) {
         right = true;
     }
 
-    validateDirecton()
+    validateDirection()
 })
 
 document.addEventListener("keyup", function (event) {
@@ -106,10 +107,10 @@ document.addEventListener("keyup", function (event) {
         right = false;
     }
 
-    validateDirecton()
+    validateDirection()
 })
 
-function validateDirecton() {
+function validateDirection() {
     finalUp = up && !down;
     finalDown = !up && down;
     finalLeft = left && !right;
@@ -137,25 +138,36 @@ function calcDirection() {
         direction = {x: -1, y: 0};
     }
 
-    //rotation matrix from camera.rotation.y
-    let advencement = {
+    return {
         x: direction.x * Math.cos(camera.rotation.y) - direction.y * Math.sin(camera.rotation.y),
         y: direction.x * Math.sin(camera.rotation.y) + direction.y * Math.cos(camera.rotation.y),
     }
-    return advencement
 }
+camera.rotation.reorder('YXZ');
 
 const sensibility = 0.004;
 const speed = 0.01;
+
 function animate() {
     camera.rotation.y += -mousePos.x * sensibility;
+    camera.rotation.x += -mousePos.y * sensibility;
+
+    if (camera.rotation.x < -Math.PI/2) {
+        camera.rotation.x = -Math.PI/2
+    }
+    if (camera.rotation.x > Math.PI/2) {
+        camera.rotation.x = Math.PI/2
+    }
+
     let direction = calcDirection();
     camera.position.x += direction.x * speed;
     camera.position.z += -direction.y * speed;
+
     mousePos = { x: 0, y: 0 };
     camera.setViewOffset(window.innerWidth, window.innerHeight, 0, 0, window.innerWidth, window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    requestAnimationFrame( animate );
+
     renderer.render( scene, camera );
+    requestAnimationFrame( animate );
 }
 animate();
