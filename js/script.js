@@ -45,10 +45,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 scene.background = new Three.Color(0x000000);
 
-camera.position.y = 0.1
+camera.position.y = 0.1;
 
-let userNum = 0
-let angle = userNum/12 * Math.PI;
+let userNum = 0;
+let angle = userNum/12 * Math.PI * 2;
 const distance = 0.3;
 camera.position.x = Math.sin(angle) * distance;
 camera.position.z = Math.cos(angle) * distance;

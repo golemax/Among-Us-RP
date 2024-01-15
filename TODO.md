@@ -1,0 +1,27 @@
+- Menu
+- Menu > Play Warning
+- Menu > Credits
+- Menu > Settings
+- Settings > Player Rotation Sensibility (not for VR)
+- Settings > Player Move Sensibility (with a maximum)
+- Menu > Github Link
+- Gameplay > Tasks
+- Gameplay > Doors
+- Gameplay > Vents
+- Gameplay > Sabotages
+- Gameplay > Endurance
+- Gameplay > Collisions
+- Expression Engine > Detector
+- Expression Engine > Animations
+- Expression Engine > Animations Transitions
+- Online
+- Online > Websocket Protocol
+- Online > Public Server
+- Online > Self Hosted Server
+- Online > API
+- Map > Clean "Skeld" Map
+- Map > Set Lights
+- Map > Set HitBox (ref to [Collisions](NOTE.md#collisions))
+- Gameplay > Support Full-Body Tracking
+- Gameplay > Support Eye Tracking
+- Gameplay > Support Immersive Collisions
