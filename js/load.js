@@ -23,6 +23,14 @@ loader.load(
     }
 );
 
+new Three.TextureLoader().load(
+    'common/sky.jpg',
+    function ( texture )  {
+        texture.mapping = Three.EquirectangularReflectionMapping;
+        texture.colorSpace = Three.SRGBColorSpace;
+        scene.background = texture;
+    });
+
 // loader.load(
 //     'common/character/scene.gltf',
 //     function ( gltf ) {
