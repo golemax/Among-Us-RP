@@ -70,23 +70,34 @@ export async function run (env) {
     }
 
     let oldTime = Date.now()
-
     const Three = await import("../Three.js/Three.js")
+    const Color = Three.Color
     const ray = new Three.Raycaster()
-    let cube = new Three.Mesh(new Three.BoxGeometry(0.1, 0.1, 0.1), new Three.MeshBasicMaterial())
-    env.scene.add(cube)
+    let cube1 = new Three.Mesh(
+        new Three.BoxGeometry(0.01, 0.01, 0.01),
+        new Three.MeshBasicMaterial({color: new Color( 0x0000ff )}))
+        env.scene.add(cube1)
+    let cube2 = new Three.Mesh(
+        new Three.BoxGeometry(0.01, 0.01, 0.01),
+        new Three.MeshBasicMaterial({color: new Color( 0xff0000 )}))
+    env.scene.add(cube2)
+    const topVector = new Three.Vector3(0, 1, 0)
 
-    let lastFaceIntersect = null
+    function intersect(pos, vector, object) {
+        ray.set(pos, vector)
+        let res = ray.intersectObject(object)
+        return res.filter(v => v.distance > 0.01)
+    }
 
-    let stop = false
-
-    document.addEventListener("keyup", function (event) {
-        const code = event.code
-        if (code === "KeyJ") {
-            stop = true
-            console.log("Stopped")
-        }
-    })
+    // debug
+    // let stop = false
+    // document.addEventListener("keyup", function (event) {
+    //     const code = event.code
+    //     if (code === "KeyJ") {
+    //         stop = true
+    //         console.log("Stopped")
+    //     }
+    // })
 
     env.onUpdate.push(env => {
         const camera = env.camera
@@ -103,35 +114,95 @@ export async function run (env) {
         newPos.x += direction.x * speed * diff;
         newPos.z += -direction.y * speed * diff;
 
-        ray.set(camera.position, newPos.clone().sub(oldPos).normalize())
         const moveSpace = env.scene.getObjectByName("MoveSpace")
-        let clips = ray.intersectObject(moveSpace)
+        let clips = intersect(camera.position, newPos.clone().sub(oldPos).normalize(), moveSpace)
 
-        if (stop || stop === null) {
-            if (stop === null) return
-            console.log(camera.position)
-            console.log(clips)
-            stop = null
-        }
+        // debug
+        // if (stop || stop === null) {
+        //     if (stop === null) return
+        //     console.log(camera.position)
+        //     console.log(clips)
+        //     stop = null
+        // }
 
+        // don't go to void & only on move
         if(clips.length > 0) {
-            if(clips.length % 2 === 1 &&
-                (camera.position.distanceTo(newPos) > camera.position.distanceTo(clips[0].point))) {
-                console.log("touch wall")
+            let oldInside = intersect(oldPos, oldPos.clone().add(topVector), moveSpace).length % 2 === 1
+
+            if(oldInside && (oldPos.distanceTo(newPos) > oldPos.distanceTo(clips[0].point))) {
+                // debug
+                // console.log("touch wall")
+
+                // get face
+                const positionsBuffer = moveSpace.geometry.attributes.position
+                const slidePlan = new Three.Plane().setFromCoplanarPoints(
+                    new Three.Vector3(
+                        positionsBuffer.getX(clips[0].face.a) + moveSpace.position.x,
+                        positionsBuffer.getY(clips[0].face.a) + moveSpace.position.y,
+                        positionsBuffer.getZ(clips[0].face.a) + moveSpace.position.z
+                    ),
+                    new Three.Vector3(
+                        positionsBuffer.getX(clips[0].face.b) + moveSpace.position.x,
+                        positionsBuffer.getY(clips[0].face.b) + moveSpace.position.y,
+                        positionsBuffer.getZ(clips[0].face.b) + moveSpace.position.z
+                    ),
+                    new Three.Vector3(
+                        positionsBuffer.getX(clips[0].face.c) + moveSpace.position.x,
+                        positionsBuffer.getY(clips[0].face.c) + moveSpace.position.y,
+                        positionsBuffer.getZ(clips[0].face.c) + moveSpace.position.z
+                    )
+                )
+
+                // debug
+                // const geometry = new Three.BufferGeometry();
+                // const positions = [
+                //         positionsBuffer.getX(clips[0].face.a) + moveSpace.position.x,
+                //         positionsBuffer.getY(clips[0].face.a) + moveSpace.position.y,
+                //         positionsBuffer.getZ(clips[0].face.a) + moveSpace.position.z,
+                //
+                //         positionsBuffer.getX(clips[0].face.b) + moveSpace.position.x,
+                //         positionsBuffer.getY(clips[0].face.b) + moveSpace.position.y,
+                //         positionsBuffer.getZ(clips[0].face.b) + moveSpace.position.z,
+                //
+                //         positionsBuffer.getX(clips[0].face.c) + moveSpace.position.x,
+                //         positionsBuffer.getY(clips[0].face.c) + moveSpace.position.y,
+                //         positionsBuffer.getZ(clips[0].face.c) + moveSpace.position.z
+                // ];
+                // geometry.setAttribute( 'position', new Three.Float32BufferAttribute( positions, 3 ) );
+                // geometry.computeVertexNormals();
+                // const object = new Three.Mesh( geometry,  new Three.MeshNormalMaterial({"side": Three.DoubleSide}));
+                // env.scene.add(object);
+
+                // get new pos & apply if correct
+                newPos = slidePlan.projectPoint(newPos, new Three.Vector3())
+                const leftDropDiff = slidePlan.normal.clone().normalize().multiplyScalar(0.01)
+                const rightDropDiff = new Three.Vector3(-leftDropDiff.x, leftDropDiff.y, -leftDropDiff.z)
+                const leftDrop = newPos.clone().add(leftDropDiff)
+                const rightDrop = newPos.clone().add(rightDropDiff)
+                if (intersect(leftDrop, leftDrop.clone().add(topVector), moveSpace).length % 2 === 1) {
+                    camera.position.copy(leftDrop)
+                } else if (intersect(rightDrop, rightDrop.clone().add(topVector), moveSpace).length % 2 === 1) {
+                    camera.position.copy(rightDrop)
+                }
+
+                // debug
+                // cube1.position.copy(leftDrop)
+                // cube2.position.copy(rightDrop)
+
             } else {
-                console.log(clips.length % 2 === 1 ? "inside" : "outside")
-                camera.position.copy(newPos)
-                lastFaceIntersect = null
+                // debug
+                // console.log(oldInside ? "inside" : "outside")
+                if (!oldInside || intersect(newPos, newPos.clone().add(topVector), moveSpace).length % 2 === 1) {
+                    camera.position.copy(newPos)
+                }
             }
-        } else if(JSON.stringify(newPos) !== JSON.stringify(oldPos) ) {
-            console.log("no bound")
         }
 
         // debug
-        if (clips.length > 0) {
-            cube.position.copy(clips[0].point)
-        } else {
-            cube.position.copy(camera.position)
-        }
+        // if (clips.length > 0) {
+        //     cube.position.copy(clips[0].point)
+        // } else {
+        //     cube.position.copy(camera.position)
+        // }
     })
 }
