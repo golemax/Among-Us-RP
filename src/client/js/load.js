@@ -9,7 +9,7 @@ export async function run () {
     const loader = new GLTFLoader();
 
     const gltf = await loader.loadAsync(
-        '../common/skeld/skeld.glb',
+        './common/skeld/skeld.glb',
         function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }
@@ -21,7 +21,7 @@ export async function run () {
     // scene.position.z = 3.75;
 
     new Three.TextureLoader().load(
-        '../common/sky.jpg',
+        './common/sky.jpg',
         function (texture) {
             texture.mapping = Three.EquirectangularReflectionMapping;
             texture.colorSpace = Three.SRGBColorSpace;
