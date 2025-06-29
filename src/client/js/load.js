@@ -9,7 +9,7 @@ export async function run () {
     const loader = new GLTFLoader();
 
     const gltf = await loader.loadAsync(
-        'common/skeld/skeld.glb',
+        '../common/skeld/skeld.glb',
         function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }
