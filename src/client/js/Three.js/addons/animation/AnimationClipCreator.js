@@ -1,4 +1,4 @@
-import {
+	import {
 	AnimationClip,
 	BooleanKeyframeTrack,
 	ColorKeyframeTrack,

@@ -31,14 +31,14 @@ class Scene extends Object3D {
 
 		super.copy( source, recursive );
 
-		if ( source.background !== null ) this.background = source.background.clone();
-		if ( source.environment !== null ) this.environment = source.environment.clone();
-		if ( source.fog !== null ) this.fog = source.fog.clone();
+		if ( source.background != null ) this.background = source.background.clone();
+		if ( source.environment != null ) this.environment = source.environment.clone();
+		if ( source.fog != null ) this.fog = source.fog.clone();
 
 		this.backgroundBlurriness = source.backgroundBlurriness;
 		this.backgroundIntensity = source.backgroundIntensity;
 
-		if ( source.overrideMaterial !== null ) this.overrideMaterial = source.overrideMaterial.clone();
+		if ( source.overrideMaterial != null ) this.overrideMaterial = source.overrideMaterial.clone();
 
 		this.matrixAutoUpdate = source.matrixAutoUpdate;
 
